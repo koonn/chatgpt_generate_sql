@@ -1,6 +1,8 @@
 import openai
 import os
 
+import streamlit as st
+
 from langchain import SQLDatabase, SQLDatabaseChain
 from langchain.chat_models import ChatOpenAI 
 
@@ -16,14 +18,14 @@ db_name = 'chinook.db'
 db_url = 'sqlite:///' + db_name
 tables = ['albums', 'artists', 'customers', 'employees', 'genres', 'invoice_items', 'invoices', 'media_types', 'playlists', 'playlist_track', 'tracks']
 
+# データベースオブジェクトを作成
+db = SQLDatabase.from_uri(
+    database_uri=db_url,
+    include_tables=tables,
+    )
 
-def main():
-    # データベースオブジェクトを作成
-    db = SQLDatabase.from_uri(
-        database_uri=db_url,
-        include_tables=tables,
-        )
 
+def main(question: str):
     # チャットモデルの作成
     llm = ChatOpenAI(model='gpt-3.5-turbo')
 
@@ -34,8 +36,16 @@ def main():
         verbose=True
         )
     
-    db_chain.run("顧客データは何件あるか教えてください。")
+    st.write(db_chain.run(question))
 
 
 if __name__ == '__main__':
-    main()
+    # タイトル
+    st.title('Chincookデータベースの分析ツール')
+
+    # メイン部分: 質問の入力と送信、結果の表示
+    with st.form(key='question_form'):
+        question = st.text_input(label='質問を入力してください。')
+        submitted = st.form_submit_button(label='送信')
+        if submitted:
+            main(question=question)
