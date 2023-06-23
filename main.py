@@ -1,5 +1,6 @@
 import openai
 import os
+import re
 
 import streamlit as st
 
@@ -33,10 +34,29 @@ def main(question: str):
     db_chain = SQLDatabaseChain.from_llm(
         llm=llm,
         db=db,
-        verbose=True
+        verbose=True,
+        return_intermediate_steps=True
         )
     
-    st.write(db_chain.run(question))
+    response = db_chain(question)
+    
+    st.header('回答')
+    st.write(response['result'])
+
+    st.header('実行したSQLクエリ')
+    st.code(get_query(response=response))
+
+
+def get_query(response: dict) -> str:
+    '''intermediate_stepsから、SQLクエリ部分を取得する関数'''
+    # input部分を取得
+    intermediate_steps = response['intermediate_steps']
+    input = intermediate_steps[0]['input']
+
+    # SQLクエリ部分を取得
+    query = re.split('SQLQuery:|SQLResult:', input)[1]
+
+    return query
 
 
 if __name__ == '__main__':
