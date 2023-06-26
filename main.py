@@ -61,7 +61,7 @@ def get_query(response: dict) -> str:
 
 if __name__ == '__main__':
     # タイトル
-    st.title('Chincookデータベースの分析ツール')
+    st.title('chinookデータベースの分析ツール')
 
     # メイン部分: 質問の入力と送信、結果の表示
     with st.form(key='question_form'):
